@@ -9,6 +9,23 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {IUniSwapV2Router02} from "./Interfaces.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+interface IBBTKN {
+    function transfer(address to, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function _beforeTokenTransfer(address from, address to, uint256 amount) external;
+}
+
+interface IUSDC {
+    function transfer(address to, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
+
 contract PublicSale is 
     Initializable, 
     PausableUpgradeable, 
@@ -22,10 +39,10 @@ contract PublicSale is
     return monto;
     }
     
-    address addressBBTKN;
-    // IBBTKN bbtkn = IBBTKN(addressBBTKN);
-    address addressUSDC;
-    // IUSDC usdc = IUSDC(addressUSDC);
+    address addressBBTKN = 0xaAaA3dA4beC70a1816481C54F25d54b0ebC1A079;
+    IBBTKN bbtkn = IBBTKN(addressBBTKN);
+    address addressUSDC = 0xFDB8d43c9D486E0978cC05d174475C72BD25C0d8;
+    IUSDC usdc = IUSDC(addressUSDC);
     address routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     IUniSwapV2Router02 router = IUniSwapV2Router02(routerAddress);
 
@@ -75,38 +92,40 @@ contract PublicSale is
     function purchaseWithTokens(uint256 _id) public {
         require(0<= _id || _id <= 699, "NFT ID Invalid");
         uint256 price = valueNftTokenAndUsdc(_id);
-        //bbtkn.transferFrom(msg.sender, address(this), price);
+        bbtkn.transferFrom(msg.sender, address(this), price);
         emit PurchaseNftWithId(msg.sender, _id);
     }
 
     function purchaseWithUSDC(uint256 _id, uint256 _amountIn) external {
         require(0<= _id || _id <= 699, "NFT ID Invalid");
-        // transfiere _amountIn de USDC a este contrato
-        //usdc.transferFrom(msg.sender, address(this), _amountIn);
         uint256 price = valueNftTokenAndUsdc(_id);
+        // transfiere _amountIn de USDC a este contrato
+        usdc.transferFrom(msg.sender, address(this), _amountIn);
         
         // llama a swapTokensForExactTokens: valor de retorno de este metodo es cuanto gastaste del token input
-        //usdc.approve(routerAddress, _amountIn);
-        //uint256[] amounts = router.swapTokensForExactTokens(price, _amountIn, [addressUSDC, addressBBTKN], msg.sender, 120);
+        usdc.approve(routerAddress, _amountIn);
+        address[] memory path = new address[](2);
+        path[0] = addressUSDC;
+        path[1] = addressBBTKN;
+        uint256[] memory amounts = router.swapTokensForExactTokens(price, _amountIn, path, msg.sender, 120);
         
         // transfiere el excedente de USDC a msg.sender
-        //if (_amountIn > amounts[0]) {
-        //    usdc.transfer(msg.sender, _amountIn - amounts[0]);
-        //}
+        if (_amountIn > amounts[0]) {
+            usdc.transfer(msg.sender, _amountIn - amounts[0]);
+        }
     
         emit PurchaseNftWithId(msg.sender, _id);
     }
 
     function purchaseWithEtherAndId(uint256 _id) public payable {
         require(700<= _id || _id <= 999, "NFT ID Invalid");
-        uint256 price = 0.01 ether;
-        transfer(address(this), price);
+        require(msg.value == 0.01 ether, "El NFT tiene un valor de 0.01 ETH");
+
         emit PurchaseNftWithId(msg.sender, _id);
     }
 
     function depositEthForARandomNft() public payable {
-        uint256 price = 0.01 ether;
-        transfer(address(this), price);
+        require(msg.value == 0.01 ether, "El NFT tiene un valor de 0.01 ETH");
         uint256 _id = montoAleatorio();
         emit PurchaseNftWithId(msg.sender, _id);
     }
@@ -132,4 +151,5 @@ contract PublicSale is
         onlyRole(UPGRADER_ROLE)
         override
     {}
+
 }
