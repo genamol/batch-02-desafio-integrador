@@ -33,18 +33,14 @@ contract PublicSale is
     UUPSUpgradeable
     {
     
-    function montoAleatorio() public view returns (uint256) {
-    uint256 monto =  (uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender))) % 1000);
-    require(700 <= monto && monto <=999);
-    return monto;
+   function generateRandomNumber() public view returns (uint256) {
+        // Generar un número aleatorio en el rango de 0 a 299
+        uint256 randomNumber = uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp))) % 300;
+
+        // Sumar 700 al número aleatorio para obtener un valor en el rango de 700 a 999
+        return randomNumber + 700;
     }
     
-    address addressBBTKN = 0xaAaA3dA4beC70a1816481C54F25d54b0ebC1A079;
-    IBBTKN bbtkn = IBBTKN(addressBBTKN);
-    address addressUSDC = 0xFDB8d43c9D486E0978cC05d174475C72BD25C0d8;
-    IUSDC usdc = IUSDC(addressUSDC);
-    address routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    IUniSwapV2Router02 router = IUniSwapV2Router02(routerAddress);
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -62,6 +58,13 @@ contract PublicSale is
     constructor() {
         _disableInitializers();
     }
+
+    address addressBBTKN = 0xaAaA3dA4beC70a1816481C54F25d54b0ebC1A079;
+    IBBTKN bbtkn = IBBTKN(addressBBTKN);
+    address addressUSDC = 0xbF9452aF129BF35F80b3e911180BD4892dc3f14d;
+    IUSDC usdc = IUSDC(addressUSDC);
+    address routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    IUniSwapV2Router02 router = IUniSwapV2Router02(routerAddress);
 
     function initialize() initializer public {
         __Pausable_init();
@@ -126,7 +129,8 @@ contract PublicSale is
 
     function depositEthForARandomNft() public payable {
         require(msg.value == 0.01 ether, "El NFT tiene un valor de 0.01 ETH");
-        uint256 _id = montoAleatorio();
+
+        uint256 _id = generateRandomNumber();
         emit PurchaseNftWithId(msg.sender, _id);
     }
 

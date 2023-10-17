@@ -66,6 +66,8 @@ contract CuyCollectionNft is
         uint256 tokenId,
         bytes32[] calldata proofs
     ) public {
+        require(tokenId >= 1000 && tokenId <= 1999, "Id NFT Invalid");
+        
         // Antes de acuñar vamos a validar pertenecia
         // Vamos a validar si to y tokenId son parte de la lista
         // verify()

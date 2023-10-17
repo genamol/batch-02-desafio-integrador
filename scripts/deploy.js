@@ -42,7 +42,7 @@ if (
 
 // Publicar NFT en Mumbai
 async function deployMumbai() {
-  var relAddMumbai = "0x08C3753774057746aeC99427e8545727d8317DF9"; // relayer mumbai ((CAMBIAR !!))
+  var relAddMumbai = "0x243837A6D9F5FEB21Bf657F60Bb81DA16E9bC074"; // relayer mumbai
 
   // utiliza deploySC
   var proxyContract = await deploySC("CuyCollectionNft", []);
@@ -61,7 +61,7 @@ async function deployMumbai() {
 
 // Publicar UDSC y Bbites Token en Goerli
 async function deployTokensGoerli() {
-  //var relAddGoerli; // relayer goerli
+  var relAddGoerli = "0x2dB06cd6365c09c57363DeE13eB02961dC9284aD"; // relayer goerli
 
 
   // var bbitesToken Contrato
@@ -107,9 +107,9 @@ async function deployPSGoerli() {
   await verify(impPS, "PublicSale", []);
 }
 
- deployMumbai()
+// deployMumbai()
 // deployTokensGoerli()
-// deployPSGoerli()
+ deployPSGoerli()
   //
   .catch((error) => {
     console.error(error);

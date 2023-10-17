@@ -23,7 +23,7 @@ function getRootFromMT() {
 
   root = merkleTree.getHexRoot();
 
-  console.log(root);
+  console.log(`La nueva raiz es: ${root}`);
   return root;
 }
 
