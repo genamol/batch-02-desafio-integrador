@@ -58,6 +58,7 @@ contract CuyCollectionNft is
         address to,
         uint256 tokenId
     ) public onlyRole(MINTER_ROLE) {
+        require(tokenId >= 0 && tokenId <= 999, "Id NFT Invalid");
         _safeMint(to, tokenId);
     }
 

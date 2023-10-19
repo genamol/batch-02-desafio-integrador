@@ -27,4 +27,17 @@ function getRootFromMT() {
   return root;
 }
 
-module.exports = { getRootFromMT };
+var hasheandoElemento, pruebas;
+function construyendoPruebas(tokenId, account) {
+
+  hasheandoElemento = hashToken(tokenId, account);
+  pruebas = merkleTree.getHexProof(hasheandoElemento);
+  console.log(pruebas);
+
+  // verificacion off-chain
+  var pertenece = merkleTree.verify(pruebas, hasheandoElemento, root);
+  console.log(pertenece);
+  return pruebas;
+}
+
+module.exports = { getRootFromMT, construyendoPruebas };

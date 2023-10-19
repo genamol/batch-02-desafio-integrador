@@ -59,17 +59,24 @@ contract PublicSale is
         _disableInitializers();
     }
 
-    address addressBBTKN = 0xaAaA3dA4beC70a1816481C54F25d54b0ebC1A079;
-    IBBTKN bbtkn = IBBTKN(addressBBTKN);
-    address addressUSDC = 0xbF9452aF129BF35F80b3e911180BD4892dc3f14d;
-    IUSDC usdc = IUSDC(addressUSDC);
-    address routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    IUniSwapV2Router02 router = IUniSwapV2Router02(routerAddress);
+    address addressBBTKN;
+    IBBTKN bbtkn;
+    address addressUSDC;
+    IUSDC usdc;
+    address routerAddress;
+    IUniSwapV2Router02 router;
 
     function initialize() initializer public {
         __Pausable_init();
         __AccessControl_init();
         __UUPSUpgradeable_init();
+
+    addressBBTKN = 0xaAaA3dA4beC70a1816481C54F25d54b0ebC1A079;
+    bbtkn = IBBTKN(addressBBTKN);
+    addressUSDC = 0xbF9452aF129BF35F80b3e911180BD4892dc3f14d;
+    usdc = IUSDC(addressUSDC);
+    routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    router = IUniSwapV2Router02(routerAddress);
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
