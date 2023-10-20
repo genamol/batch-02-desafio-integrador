@@ -54,6 +54,8 @@ contract PublicSale is
 
     event PurchaseNftWithId(address account, uint256 id);
 
+    mapping (uint256 => bool) minted;
+
     ///@custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -101,13 +103,16 @@ contract PublicSale is
 
     function purchaseWithTokens(uint256 _id) public {
         require(0<= _id || _id <= 699, "NFT ID Invalid");
+        require(minted[_id] = false, "Este Id NFT ya fue minteado");
         uint256 price = valueNftTokenAndUsdc(_id);
         bbtkn.transferFrom(msg.sender, address(this), price);
         emit PurchaseNftWithId(msg.sender, _id);
+        minted[_id] = true;
     }
 
     function purchaseWithUSDC(uint256 _id, uint256 _amountIn) external {
         require(0<= _id || _id <= 699, "NFT ID Invalid");
+        require(minted[_id] = false, "Este Id NFT ya fue minteado");
         uint256 price = valueNftTokenAndUsdc(_id);
         // transfiere _amountIn de USDC a este contrato
         usdc.transferFrom(msg.sender, address(this), _amountIn);
@@ -125,20 +130,25 @@ contract PublicSale is
         }
     
         emit PurchaseNftWithId(msg.sender, _id);
+        minted[_id] = true;
     }
 
     function purchaseWithEtherAndId(uint256 _id) public payable {
         require(700<= _id || _id <= 999, "NFT ID Invalid");
+        require(minted[_id] = false, "Este Id NFT ya fue minteado");
         require(msg.value == 0.01 ether, "El NFT tiene un valor de 0.01 ETH");
 
         emit PurchaseNftWithId(msg.sender, _id);
+        minted[_id] = true;
     }
 
     function depositEthForARandomNft() public payable {
         require(msg.value == 0.01 ether, "El NFT tiene un valor de 0.01 ETH");
 
         uint256 _id = generateRandomNumber();
+        require(minted[_id] = false, "Este Id NFT ya fue minteado");
         emit PurchaseNftWithId(msg.sender, _id);
+        minted[_id] = true;
     }
 
     receive() external payable {

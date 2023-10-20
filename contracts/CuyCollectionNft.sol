@@ -26,6 +26,7 @@ contract CuyCollectionNft is
     event Burn(address account, uint256 id);
 
     mapping (uint256 => address) owners;
+    mapping (uint256 => bool) minted;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -59,7 +60,9 @@ contract CuyCollectionNft is
         uint256 tokenId
     ) public onlyRole(MINTER_ROLE) {
         require(tokenId >= 0 && tokenId <= 999, "Id NFT Invalid");
+        require(minted[tokenId] = false, "Este Id NFT ya fue minteado");
         _safeMint(to, tokenId);
+        minted[tokenId] = true;
     }
 
     function safeMintWhiteList(
@@ -68,7 +71,7 @@ contract CuyCollectionNft is
         bytes32[] calldata proofs
     ) public {
         require(tokenId >= 1000 && tokenId <= 1999, "Id NFT Invalid");
-        
+        require(minted[tokenId] = false, "Este Id NFT ya fue minteado");
         // Antes de acuñar vamos a validar pertenecia
         // Vamos a validar si to y tokenId son parte de la lista
         // verify()
@@ -77,6 +80,8 @@ contract CuyCollectionNft is
             "No eres parte de la lista"
         );
         _safeMint(to, tokenId);
+        minted[tokenId] = true;
+
     }
 
     function buyBack(uint256 id) public {
