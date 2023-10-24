@@ -73,9 +73,9 @@ contract PublicSale is
         __AccessControl_init();
         __UUPSUpgradeable_init();
 
-    addressBBTKN = 0xaAaA3dA4beC70a1816481C54F25d54b0ebC1A079;
+    addressBBTKN = 0x65b539D24ebFDcb9A6a127e335f184C5FFb6d1f1;
     bbtkn = IBBTKN(addressBBTKN);
-    addressUSDC = 0xbF9452aF129BF35F80b3e911180BD4892dc3f14d;
+    addressUSDC = 0xBDf3bB8123c1d4b5A22C2f278731a6691C3585A8;
     usdc = IUSDC(addressUSDC);
     routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     router = IUniSwapV2Router02(routerAddress);
@@ -87,7 +87,7 @@ contract PublicSale is
 
     function valueNftTokenAndUsdc (uint256 _id) internal view returns (uint256) {
         uint256 valueNft;
-        require (_id >= 0 && _id <= 699, "Id NFT invalid.");
+        require (_id >= 0 && _id <= 699, "Invalid NFT ID");
         if (_id >= 0 && _id <= 199) {
             valueNft = 1000 * 10 ** 18;
         }else if (_id >= 200 && _id <= 499) {
@@ -102,17 +102,17 @@ contract PublicSale is
     }
 
     function purchaseWithTokens(uint256 _id) public {
-        require(0<= _id || _id <= 699, "NFT ID Invalid");
-        require(minted[_id] = false, "Este Id NFT ya fue minteado");
+        require(0<= _id && _id <= 699, "Invalid NFT ID");
+        require(minted[_id] == false, "Este Id NFT ya fue minteado");
         uint256 price = valueNftTokenAndUsdc(_id);
-        bbtkn.transferFrom(msg.sender, address(this), price);
+        bool accept = bbtkn.transferFrom(msg.sender, address(this), price);
         emit PurchaseNftWithId(msg.sender, _id);
         minted[_id] = true;
     }
 
     function purchaseWithUSDC(uint256 _id, uint256 _amountIn) external {
-        require(0<= _id || _id <= 699, "NFT ID Invalid");
-        require(minted[_id] = false, "Este Id NFT ya fue minteado");
+        require(0<= _id || _id <= 699, "Invalid NFT ID");
+        require(minted[_id] == false, "Este Id NFT ya fue minteado");
         uint256 price = valueNftTokenAndUsdc(_id);
         // transfiere _amountIn de USDC a este contrato
         usdc.transferFrom(msg.sender, address(this), _amountIn);
@@ -134,8 +134,8 @@ contract PublicSale is
     }
 
     function purchaseWithEtherAndId(uint256 _id) public payable {
-        require(700<= _id || _id <= 999, "NFT ID Invalid");
-        require(minted[_id] = false, "Este Id NFT ya fue minteado");
+        require(700<= _id || _id <= 999, "Invalid NFT ID");
+        require(minted[_id] == false, "Este Id NFT ya fue minteado");
         require(msg.value == 0.01 ether, "El NFT tiene un valor de 0.01 ETH");
 
         emit PurchaseNftWithId(msg.sender, _id);
@@ -146,7 +146,7 @@ contract PublicSale is
         require(msg.value == 0.01 ether, "El NFT tiene un valor de 0.01 ETH");
 
         uint256 _id = generateRandomNumber();
-        require(minted[_id] = false, "Este Id NFT ya fue minteado");
+        require(minted[_id] == false, "Este Id NFT ya fue minteado");
         emit PurchaseNftWithId(msg.sender, _id);
         minted[_id] = true;
     }

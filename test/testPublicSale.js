@@ -1,9 +1,14 @@
 var { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 var { expect } = require("chai");
-var { ethers } = require("hardhat");
+var { ethers, network } = require("hardhat");
 var { time } = require("@nomicfoundation/hardhat-network-helpers");
 
-const { getRole, deploySC, deploySCNoUp, ex, pEth } = require("../utils");
+const { getRole, deploySC, deploySCNoUp, ex, pEth, printAddress } = require("../utils");
+const { construyendoPruebas, getRootFromMT } = require("../utils/merkleTree");
+const { id } = require("ethers");
+const { MerkleTree } = require("merkletreejs");
+const keccak256 = require("keccak256");
+
 
 const MINTER_ROLE = getRole("MINTER_ROLE");
 const BURNER_ROLE = getRole("BURNER_ROLE");
@@ -12,61 +17,176 @@ const BURNER_ROLE = getRole("BURNER_ROLE");
 var startDate = 1696032000;
 describe("Testeando Public Sale", () => {
 
-var PublicSale, publicsale;
+var routerAdd;
+var usdc;
+var BBTkn, bbtknProxy;
+var PublicSale, publicsaleProxy;
 
 async function deployFixture() {  
 
     var [owner, alice, bob, carl] = await ethers.getSigners();
 
-    PublicSale = await hre.ethers.getContractFactory("PublicSale");
-    publicsale = await hre.upgrades.deployProxy(PublicSale, {
-        kind: "uups",
-      });
-      var implementationAddress =
-      await hre.upgrades.erc1967.getImplementationAddress(
-        publicsale.target
-      );
-    
-   // owner.address.MINTER_ROLE;
-    return { publicsale, owner, alice, bob, carl};
+    usdc = await deploySCNoUp("USDCoin", []);
+
+    bbtknProxy = await deploySC("BBitesTokenUpgradeable", []);
+
+    publicsaleProxy = await deploySC("PublicSale", []);
+
+    return { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl};
   }
 
 
 
-  
-//**      it("Publicando los contarto inteligentes", async () => {
-//        PublicSale = await hre.ethers.getContractFactory(
-//          "CuyCollectionNft"
-//        );
-//        publicsale = await hre.upgrades.deployProxy(PublicSale, {
-//          kind: "uups",
-//        });
-//  
-//        var implementationAddress =
-//          await hre.upgrades.erc1967.getImplementationAddress(
-//            publicsale.target
-//          );
-  
-//        console.log(`El address del Proxy es ${publicsale.target}`);
-//        console.log(`El address de Implementation es ${implementationAddress}`);
+describe("Publicando los contratos inteligentes", () => {
+
+  it("Publicando USDCoin", async () => {
+
+    usdc = await deploySCNoUp("USDCoin", []);
         
- //           return {publicsale};
-//        });
+        return {usdc};
+      });
+      
+  
+  
+  it("Publicando BBitesToken", async () => {
+    BBTkn = await hre.ethers.getContractFactory(
+      "BBitesTokenUpgradeable"
+      );
+      bbtknProxy = await hre.upgrades.deployProxy(BBTkn, {
+        kind: "uups",
+      });
+      
+      var implementationAddress =
+      await hre.upgrades.erc1967.getImplementationAddress(
+        bbtknProxy.target
+        );
+        
+        console.log(`El address del Proxy es ${bbtknProxy.target}`);
+        console.log(`El address de Implementation es ${implementationAddress}`);
+        
+        return {bbtknProxy};
+      });
+      
+    
+    
+    
+    it("Publicando PublicSale", async () => {
+     PublicSale = await hre.ethers.getContractFactory(
+       "PublicSale"
+     );
+     publicsaleProxy = await hre.upgrades.deployProxy(PublicSale, {
+       kind: "uups",
+     });
+  
+     var implementationAddress =
+       await hre.upgrades.erc1967.getImplementationAddress(
+         publicsaleProxy.target
+       );
+  
+     console.log(`El address del Proxy es ${publicsaleProxy.target}`);
+     console.log(`El address de Implementation es ${implementationAddress}`);
+      
+         return {publicsaleProxy};
+     });
 
-describe("Testeando Roles", () => {
-        it("SafeMint protegido con MINTER_ROLE", async () => {
+    });
+    
+
+
+describe("Testeando purchaseWithTokens", () => {
+        it("El NFT ID debe estar entre 0 - 699", async () => {
             
-            var [publicsale, owner, alice, bob, carl] = await loadFixture(deployFixture);
+            var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
 
-            const safemint = publicsale.connect(alice)["safeMint(address,uint256"];
+            var incorrectId = 750;
 
-            var aliceMinuscula = alice.address.toLowerCase();
 
             await expect(
-                safemint(bob.address, 10)
+                publicsaleProxy.connect(owner).purchaseWithTokens(incorrectId)
                 ).to.revertedWith(
-                `AccessControl: account ${aliceMinuscula} is missing role ${MINTER_ROLE}`);
+                "Invalid NFT ID");
 
-        });})
+        });
+        
+        it("El NFT no puede mintearse mas de una vez", async () => {
+          
+          var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
+          
+          var id = 500;
+
+          await publicsaleProxy.connect(owner).purchaseWithTokens(id);
+
+          await expect(
+            publicsaleProxy.connect(owner).purchaseWithTokens(id)
+            ).to.revertedWith(
+            "Este Id NFT ya fue minteado"
+          );
+        });
+      
+      
+      });
+
+
+    
+    
+      describe("Testeando purchaseWithUSDC", () => {
+       
+       
+        it("El NFT ID debe estar entre 0 - 699", async () => {
+            
+          var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
+
+          var incorrectId = 750;
+
+          var amount = 1000;
+
+          await expect(
+              publicsaleProxy.connect(owner).purchaseWithUSDC(incorrectId, amount)
+              ).to.revertedWith(
+              "Invalid NFT ID");
+
+      });
+      
+      it("El NFT no puede mintearse mas de una vez", async () => {
+        
+        var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
+        
+        var id = 500;
+        var amount = 1000;
+
+        await publicsaleProxy.connect(owner).purchaseWithUSDC(id, amount);
+
+        await expect(
+          publicsaleProxy.connect(owner).purchaseWithUSDC(id, amount)
+          ).to.revertedWith(
+          "Este Id NFT ya fue minteado"
+        );
+      });
+
+      it("Lanzando evento" , async () => {
+        var { publicsaleProxy, owner, alice } = await loadFixture(deployFixture);
+        var tokenId = 777;
+        var amount = 1000;
+
+        await expect(
+          publicsaleProxy.connect(alice).purchaseWithUSDC(tokenId, amount)
+          ).to.emit(publicsaleProxy, "PurchaseNftWithId").withArgs(alice.address, tokenId);
+    });
+
+
+      });
+
+      describe("Testeando purchaseWithEtherAndId", () => {
+        it("Lanzando event", async () => {
+          var { publicsaleProxy, owner, alice } = await loadFixture(deployFixture);
+          var tokenId = 777;
+          var amount = ethers.parseEther("0.01");
+
+          await expect(
+            publicsaleProxy.connect(alice).purchaseWithEtherAndId(tokenId, {value: amount})
+            ).to.emit(publicsaleProxy, "PurchaseNftWithId").withArgs(alice.address, tokenId);
+      });
+      });
+
 
 });

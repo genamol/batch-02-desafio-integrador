@@ -59,8 +59,8 @@ contract CuyCollectionNft is
         address to,
         uint256 tokenId
     ) public onlyRole(MINTER_ROLE) {
-        require(tokenId >= 0 && tokenId <= 999, "Id NFT Invalid");
-        require(minted[tokenId] = false, "Este Id NFT ya fue minteado");
+        require(tokenId >= 0 && tokenId <= 999, "Invalid NFT ID");
+        require(minted[tokenId] == false, "Este Id NFT ya fue minteado");
         _safeMint(to, tokenId);
         minted[tokenId] = true;
     }
@@ -70,8 +70,8 @@ contract CuyCollectionNft is
         uint256 tokenId,
         bytes32[] calldata proofs
     ) public {
-        require(tokenId >= 1000 && tokenId <= 1999, "Id NFT Invalid");
-        require(minted[tokenId] = false, "Este Id NFT ya fue minteado");
+        require(tokenId >= 1000 && tokenId <= 1999, "Invalid NFT ID");
+        require(minted[tokenId] == false, "Este Id NFT ya fue minteado");
         // Antes de acuñar vamos a validar pertenecia
         // Vamos a validar si to y tokenId son parte de la lista
         // verify()
@@ -85,7 +85,7 @@ contract CuyCollectionNft is
     }
 
     function buyBack(uint256 id) public {
-        transferFrom(msg.sender, address(0), id);
+        _burn(id);
         emit Burn(msg.sender, id);
     }
 
@@ -107,6 +107,8 @@ contract CuyCollectionNft is
     {
         return super.supportsInterface(interfaceId);
     }
+
+
 
 
 
