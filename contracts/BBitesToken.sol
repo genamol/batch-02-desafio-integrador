@@ -38,6 +38,8 @@ contract BBitesTokenUpgradeable is
         _grantRole(UPGRADER_ROLE, msg.sender);
     }
 
+
+
     function pause() public onlyRole(PAUSER_ROLE) {
         _pause();
     }
@@ -45,6 +47,14 @@ contract BBitesTokenUpgradeable is
     function unpause() public onlyRole(PAUSER_ROLE) {
         _unpause();
     }
+
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+        address owner = _msgSender();
+        _transfer(owner, to, amount);
+        emit Transfer(msg.sender, to, amount);
+        return true;
+    }
+
 
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) whenNotPaused {
         _mint(to, amount);

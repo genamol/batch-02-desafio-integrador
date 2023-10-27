@@ -60,7 +60,7 @@ async function deployMumbai() {
 }
 
 // Publicar UDSC y Bbites Token en Goerli
-async function deployTokensGoerli() {
+async function deployGoerli() {
   var relAddGoerli = "0x2dB06cd6365c09c57363DeE13eB02961dC9284aD"; // relayer goerli
 
 
@@ -72,11 +72,13 @@ async function deployTokensGoerli() {
   // var impBT = await printAddress("BBitesToken", await bbitesToken.getAddress());
   var impBT = await printAddress("BBitesTokenUpgradeable", await bbitesTokenContract.getAddress());
 
+  var bbitesTokenAddress = await bbitesTokenContract.getAddress();
 
-  
   // var usdc Contrato
   // deploySC;
   var usdcContract = await deploySCNoUp("USDCoin", []);
+
+  var usdcAddress = await usdcContract.getAddress();
   
   // set up
   await ex(bbitesTokenContract, "grantRole", [MINTER_ROLE, relAddGoerli], "Failed");
@@ -86,18 +88,10 @@ async function deployTokensGoerli() {
   await verify(impBT, "BBitesTokenUpgradeable", []);
 
   await verifyNoUp(usdcContract);
-  
-  
-}
-
-// Publicar Public Sale
-
-async function deployPSGoerli() {
-  
-  
+    
   // var psC Contrato
   // deploySC;
-  var psContract = await deploySC("PublicSale", []);
+  var psContract = await deploySC("PublicSale", [bbitesTokenAddress, usdcAddress]);
   
   // var impPS = await printAddress("PublicSale", await psC.getAddress());
   var impPS = await printAddress("PublicSale", await psContract.getAddress());
@@ -108,8 +102,8 @@ async function deployPSGoerli() {
 }
 
 // deployMumbai()
-// deployTokensGoerli()
- deployPSGoerli()
+ deployGoerli()
+
   //
   .catch((error) => {
     console.error(error);

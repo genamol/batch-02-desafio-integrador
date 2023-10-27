@@ -6,7 +6,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import {IUniSwapV2Router02} from "./Interfaces.sol";
+import {IUniSwapV2Router02, IUniswapV2Factory} from "./Interfaces.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IBBTKN {
@@ -25,6 +26,8 @@ interface IUSDC {
     function approve(address spender, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
 }
+
+
 
 contract PublicSale is 
     Initializable, 
@@ -61,31 +64,33 @@ contract PublicSale is
         _disableInitializers();
     }
 
-    address addressBBTKN;
+    address bbtknAdd;
     IBBTKN bbtkn;
-    address addressUSDC;
+    address usdcAdd;
     IUSDC usdc;
     address routerAddress;
     IUniSwapV2Router02 router;
 
-    function initialize() initializer public {
+    function initialize(address addressBBTKN, address addressUSDC ) initializer public {
         __Pausable_init();
         __AccessControl_init();
         __UUPSUpgradeable_init();
 
-    addressBBTKN = 0x65b539D24ebFDcb9A6a127e335f184C5FFb6d1f1;
-    bbtkn = IBBTKN(addressBBTKN);
-    addressUSDC = 0xBDf3bB8123c1d4b5A22C2f278731a6691C3585A8;
-    usdc = IUSDC(addressUSDC);
+    bbtknAdd = addressBBTKN;
+    bbtkn = IBBTKN(bbtknAdd);
+    usdcAdd = addressUSDC;
+    usdc = IUSDC(usdcAdd);
     routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     router = IUniSwapV2Router02(routerAddress);
+
+
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(UPGRADER_ROLE, msg.sender);
     }
 
-    function valueNftTokenAndUsdc (uint256 _id) internal view returns (uint256) {
+    function valueNftTokenAndUsdc (uint256 _id) public view returns (uint256) {
         uint256 valueNft;
         require (_id >= 0 && _id <= 699, "Invalid NFT ID");
         if (_id >= 0 && _id <= 199) {
@@ -120,9 +125,10 @@ contract PublicSale is
         // llama a swapTokensForExactTokens: valor de retorno de este metodo es cuanto gastaste del token input
         usdc.approve(routerAddress, _amountIn);
         address[] memory path = new address[](2);
-        path[0] = addressUSDC;
-        path[1] = addressBBTKN;
-        uint256[] memory amounts = router.swapTokensForExactTokens(price, _amountIn, path, msg.sender, 120);
+        path[0] = usdcAdd;
+        path[1] = bbtknAdd;
+        uint[] memory amounts; 
+        amounts = router.swapTokensForExactTokens(price, _amountIn, path, msg.sender, 120);
         
         // transfiere el excedente de USDC a msg.sender
         if (_amountIn > amounts[0]) {
@@ -172,5 +178,7 @@ contract PublicSale is
         onlyRole(UPGRADER_ROLE)
         override
     {}
+
+
 
 }

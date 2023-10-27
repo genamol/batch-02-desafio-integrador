@@ -84,6 +84,11 @@ contract CuyCollectionNft is
 
     }
 
+    function transfer(address to, uint256 id) public {
+        _transfer(msg.sender, to, id);
+        emit Transfer(msg.sender, to, id);
+    }
+
     function buyBack(uint256 id) public {
         _burn(id);
         emit Burn(msg.sender, id);
