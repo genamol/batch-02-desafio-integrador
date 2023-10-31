@@ -99,9 +99,9 @@ function setUpListeners() {
   var bttn = document.getElementById("approveButtonBBTkn");
   bttn.addEventListener("click", async function () {
     if(isConnected) {
-      document.getElementById("approveError").textContent = "";
+      // document.getElementById("approveError").textContent = "Error en el approve";
       var approveInput = document.getElementById("approveInput").value;
-      approveInput = approveInput * (10**18)
+      //approveInput = approveInput * (10**18);
       approveInput = approveInput.toString();
       try {
 
@@ -110,12 +110,12 @@ function setUpListeners() {
         console.log(res.hash);
 
       } catch (error) {
-        // document.getElementById("approveError").textContent = error;
-        console.log(error)
-        alert(error.reason)
+        document.getElementById("approveError").textContent = error;
+        console.log(error);
+        alert(error.reason);
       }
     } else {
-      alert("Por favor conecta tu billetera Metamask.")
+      alert("Por favor conecta tu billetera Metamask.");
     }
     
   });
@@ -126,9 +126,9 @@ function setUpListeners() {
   var bttn = document.getElementById("approveButtonUSDC");
   bttn.addEventListener("click", async function () {
     if(isConnected) {
-      document.getElementById("approveErrorUSDC").textContent = "";
+      // document.getElementById("approveErrorUSDC").textContent = "Error en el approve";
       var approveInput = document.getElementById("approveInputUSDC").value;
-      approveInput = approveInput * (10**6)
+      //approveInput = approveInput * (10**6);
       approveInput = approveInput.toString();
       try {
 
@@ -137,12 +137,12 @@ function setUpListeners() {
         console.log(res.hash);
 
       } catch (error) {
-        // document.getElementById("approveErrorUSDC").textContent = error;
-        console.log(error)
-        alert(error.reason)
+        document.getElementById("approveErrorUSDC").textContent = error;
+        console.log(error);
+        alert(error.reason);
       }
     } else {
-      alert("Por favor conecta tu billetera Metamask.")
+      alert("Por favor conecta tu billetera Metamask.");
     }
     
   });
@@ -178,7 +178,7 @@ function setUpListeners() {
       document.getElementById("purchaseErrorUSDC").textContent = "";
       var idInput = document.getElementById("purchaseInputUSDC").value;
       var amountIn = document.getElementById("amountInUSDCInput").value;
-      amountIn = amountIn * (10**6)
+      //amountIn = amountIn * (10**6);
       amountIn = amountIn.toString();
       try {
 
@@ -230,7 +230,7 @@ function setUpListeners() {
       try {
         var res = await signer.sendTransaction({
           to: pubSContract,
-          value: ethers.parseEther("0.001"),
+          value: ethers.parseEther("0.01"),
         });
 
         console.log(res.hash);
@@ -253,7 +253,7 @@ function setUpListeners() {
     var _id = document.getElementById("priceNftIdInput").value;
 
     try {
-      var tx = await pubSContract.getPriceForId(_id);
+      var tx = await pubSContract.valueNftTokenAndUsdc(_id);
 
       console.log(tx);
       document.getElementById("priceNftByIdText").textContent = ethers.formatUnits(tx, 18);
@@ -270,7 +270,7 @@ function setUpListeners() {
     var _id = document.getElementById("priceNftIdInputUSDC").value;
 
     try {
-      var tx = await pubSContract.getAmountIn(_id);
+      var tx = await pubSContract.valueNftTokenAndUsdc(_id);
 
       console.log(tx);
       document.getElementById("priceNftByIdUSDCText").textContent = ethers.formatUnits(tx, 6);
