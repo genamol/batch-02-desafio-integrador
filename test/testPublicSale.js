@@ -34,7 +34,7 @@ async function deployFixture() {
 
     var [owner, alice, bob, carl] = await ethers.getSigners();
 
-    // UNISWAP
+    //UNISWAP
     var Factory = new ethers.ContractFactory(
       factoryArtifact.abi,
       factoryArtifact.bytecode,
@@ -61,25 +61,27 @@ async function deployFixture() {
         );
         var router = await Router.deploy(factory.target, weth.target);
     
-        //var routerAdd = await router.getAddress();
-        var routerAdd = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+        var routerAdd = await router.getAddress();
+        
 
-        await bbtknProxy.approve(router, bbtknProxy.balanceOf(owner));
-        await usdc.approve(router, usdc.balanceOf(owner));
+        await bbtknProxy.approve(routerAdd, bbtknProxy.balanceOf(owner));
+        await usdc.approve(routerAdd, usdc.balanceOf(owner));
         await router.addLiquidity(
           bbtknProxy.target,
           usdc.target,
-          bbtknProxy.balanceOf(owner),
-          usdc.balanceOf(owner),
-          0,
-          0,
+          await bbtknProxy.balanceOf(owner),
+          await usdc.balanceOf(owner),
+          await bbtknProxy.balanceOf(owner),
+          await usdc.balanceOf(owner),
           owner,
           Math.floor(Date.now() / 1000 + 10 * 60)
         );
 
-    publicsaleProxy = await deploySC("PublicSale", [bbtknAdd, usdcAdd]);
+        console.log(await pair.getReserves());
 
-    return { publicsaleProxy, bbtknProxy, usdc, pair, routerAdd, owner, alice, bob, carl};
+    publicsaleProxy = await deploySC("PublicSale", [bbtknAdd, usdcAdd, routerAdd]);
+
+    return { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl};
   }
 
 
@@ -109,11 +111,11 @@ describe("Publicando los contratos inteligentes", () => {
         console.log(`El address del Proxy es ${bbtknProxy.target}`);
         console.log(`El address de Implementation es ${implementationAddress}`);
         
-           
+      var routerAdd = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
      PublicSale = await hre.ethers.getContractFactory(
        "PublicSale"
      );
-     publicsaleProxy = await hre.upgrades.deployProxy(PublicSale, [bbtknAdd, usdcAdd], {
+     publicsaleProxy = await hre.upgrades.deployProxy(PublicSale, [bbtknAdd, usdcAdd, routerAdd], {
        kind: "uups",
      });
   
@@ -156,7 +158,7 @@ describe("Testeando purchaseWithTokens", () => {
 
         it("El NFT ID debe estar entre 0 - 699", async () => {
             
-            var { publicsaleProxy, bbtknProxy, usdc, pair, routerAdd, owner, alice, bob, carl } = await loadFixture(deployFixture);
+            var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
 
             var incorrectId = 750;
 
@@ -168,9 +170,10 @@ describe("Testeando purchaseWithTokens", () => {
 
         });
         
+        
         it("El NFT no puede mintearse mas de una vez", async () => {
           
-          var { publicsaleProxy, bbtknProxy, usdc, pair, routerAdd, owner, alice, bob, carl } = await loadFixture(deployFixture);
+          var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
           
           var id = 500;
 
@@ -213,7 +216,7 @@ describe("Testeando purchaseWithTokens", () => {
        
         it("El NFT ID debe estar entre 0 - 699", async () => {
             
-          var { publicsaleProxy, bbtknProxy, usdc, pair, routerAdd, owner, alice, bob, carl } = await loadFixture(deployFixture);
+          var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
 
           var incorrectId = 750;
 
@@ -228,20 +231,22 @@ describe("Testeando purchaseWithTokens", () => {
       
       it("El NFT no puede mintearse mas de una vez", async () => {
         
-        var { publicsaleProxy, bbtknProxy, usdc, pair, routerAdd, owner, alice, bob, carl } = await loadFixture(deployFixture);
+        var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
         
         var id = 500;
-        var amount = 1000;
+        var amount = 40000 * 10 ** 6;
 
         var price = await publicsaleProxy.valueNftTokenAndUsdc(id);
 
         await usdc.mint(owner.address, amount);
 
+        await usdc.connect(owner).approve(publicsaleProxy.target, amount);
+
+        var amounts = await publicsaleProxy.connect(owner).purchaseWithUSDC(id, amount);
+
+
         await usdc.connect(owner).approve(publicsaleProxy.target, price);
 
-        await publicsaleProxy.connect(owner).purchaseWithUSDC(id, amount);
-
-        await usdc.connect(owner).approve(publicsaleProxy.target, price);
 
         await expect(
           publicsaleProxy.connect(owner).purchaseWithUSDC(id, amount)
@@ -250,10 +255,10 @@ describe("Testeando purchaseWithTokens", () => {
         );
       });
 
-      it("Lanzando evento" , async () => {
-        var { publicsaleProxy, bbtknProxy, usdc, pair, routerAdd, owner, alice, bob, carl } = await loadFixture(deployFixture);
+      it("Comprando correctamente, lanzando evento" , async () => {
+        var { publicsaleProxy, bbtknProxy, usdc, owner, alice, bob, carl } = await loadFixture(deployFixture);
         var id = 350;
-        var amount = 1000;
+        var amount = 40000 * 10 ** 6;
         var price = await publicsaleProxy.valueNftTokenAndUsdc(id);
 
         await usdc.mint(alice.address, amount);
@@ -268,7 +273,7 @@ describe("Testeando purchaseWithTokens", () => {
       });
 
       describe("Testeando purchaseWithEtherAndId", () => {
-        it("Comprando con cant de ether incorrecta", async () => {
+        it("Comprando con cantidad de ether incorrecta", async () => {
           var {publicsaleProxy, alice } = await loadFixture(deployFixture);
           
           await expect(
@@ -276,14 +281,14 @@ describe("Testeando purchaseWithTokens", () => {
             ).to.be.reverted;
       });
 
-      it("Purchase with usdc numero invalido", async () => {
+      it("El NFT debe estar entre 700 - 999", async () => {
         var {publicsaleProxy, alice} = await loadFixture(deployFixture);
         var numeroInvalido = 2710;
 
         await expect(publicsaleProxy.connect(alice).purchaseWithEtherAndId(numeroInvalido)).to.be.reverted;
     });
 
-        it("Lanzando event", async () => {
+        it("Comprando correctamente lanzando evento", async () => {
           var { publicsaleProxy, owner, alice } = await loadFixture(deployFixture);
           var bbtknProxyId = 777;
           var amount = ethers.parseEther("0.01");
@@ -294,8 +299,8 @@ describe("Testeando purchaseWithTokens", () => {
       });
       });
 
-      describe("Purchase whit ether ramdon", async () => {
-        it("Comprando con cant de ether incorrecta", async () => {
+      describe("Testeando depositEthForARandomNft", async () => {
+        it("Comprando con cantidad de ether incorrecta", async () => {
             var {publicsaleProxy, alice } = await loadFixture(deployFixture);
 
             var tx = alice.sendTransaction({
@@ -305,7 +310,7 @@ describe("Testeando purchaseWithTokens", () => {
             await expect(tx).to.be.reverted;
         });
 
-        it("Comprando con cant de ether correcta", async () => {
+        it("Comprando correctamente, lanzando envento", async () => {
             var {publicsaleProxy, alice } = await loadFixture(deployFixture);
 
             var amount = ethers.parseEther("0.01");

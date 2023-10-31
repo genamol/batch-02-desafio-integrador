@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "hardhat/console.sol";
 
 import {IUniSwapV2Router02, IUniswapV2Factory} from "./Interfaces.sol";
 
@@ -71,7 +72,7 @@ contract PublicSale is
     address routerAddress;
     IUniSwapV2Router02 router;
 
-    function initialize(address addressBBTKN, address addressUSDC ) initializer public {
+    function initialize(address addressBBTKN, address addressUSDC, address addressROUTER ) initializer public {
         __Pausable_init();
         __AccessControl_init();
         __UUPSUpgradeable_init();
@@ -80,7 +81,7 @@ contract PublicSale is
     bbtkn = IBBTKN(bbtknAdd);
     usdcAdd = addressUSDC;
     usdc = IUSDC(usdcAdd);
-    routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    routerAddress = addressROUTER;
     router = IUniSwapV2Router02(routerAddress);
 
 
@@ -115,10 +116,11 @@ contract PublicSale is
         minted[_id] = true;
     }
 
-    function purchaseWithUSDC(uint256 _id, uint256 _amountIn) external {
+    function purchaseWithUSDC(uint256 _id, uint _amountIn) external {
         require(0<= _id || _id <= 699, "Invalid NFT ID");
         require(minted[_id] == false, "Este Id NFT ya fue minteado");
-        uint256 price = valueNftTokenAndUsdc(_id);
+        uint price = valueNftTokenAndUsdc(_id);
+        console.log(price);
         // transfiere _amountIn de USDC a este contrato
         usdc.transferFrom(msg.sender, address(this), _amountIn);
         
@@ -128,7 +130,8 @@ contract PublicSale is
         path[0] = usdcAdd;
         path[1] = bbtknAdd;
         uint[] memory amounts; 
-        amounts = router.swapTokensForExactTokens(price, _amountIn, path, msg.sender, 120);
+        uint deadline = block.timestamp + 3600;
+        amounts = router.swapTokensForExactTokens(price, _amountIn, path, address(this), deadline);
         
         // transfiere el excedente de USDC a msg.sender
         if (_amountIn > amounts[0]) {

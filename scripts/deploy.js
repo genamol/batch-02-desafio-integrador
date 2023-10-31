@@ -91,7 +91,8 @@ async function deployGoerli() {
     
   // var psC Contrato
   // deploySC;
-  var psContract = await deploySC("PublicSale", [bbitesTokenAddress, usdcAddress]);
+  var routerAdd = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+  var psContract = await deploySC("PublicSale", [bbitesTokenAddress, usdcAddress, routerAdd]);
   
   // var impPS = await printAddress("PublicSale", await psC.getAddress());
   var impPS = await printAddress("PublicSale", await psContract.getAddress());
@@ -101,8 +102,8 @@ async function deployGoerli() {
   await verify(impPS, "PublicSale", []);
 }
 
-// deployMumbai()
- deployGoerli()
+//deployMumbai()
+deployGoerli()
 
   //
   .catch((error) => {

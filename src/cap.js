@@ -1,7 +1,7 @@
 import { Contract, ethers } from "ethers";
 
 import usdcTknAbi from "../artifacts/contracts/USDCoin.sol/USDCoin.json";
-import bbitesTokenAbi from "../artifacts/contracts/BBitesToken.sol/BBitesTokenUpgradeable.json";
+import bbitesTokenAbi from "../artifacts/contracts/BBitesToken.sol/BBitesToken.json";
 import publicSaleAbi from "../artifacts/contracts/PublicSale.sol/PublicSale.json";
 import nftTknAbi from "../artifacts/contracts/CuyCollectionNft.sol/CuyCollectionNft.json";
 
@@ -343,9 +343,9 @@ function setUpListeners() {
 function initSCsGoerli() {
   provider = new ethers.BrowserProvider(window.ethereum);
 
-  usdcAddress = "0x75Fedc87C2A39b5303576EB261F992a4d1e4972A";
-  bbitesTknAdd = "0xde3F5CE4EbfDf7bD54945eEd40ade64Cdd4ad270";
-  pubSContractAdd = "0x5899549A9C1c381Bd800146C83851b4a57a15093";
+  usdcAddress = "0xFc1382C1A46891C24e3d7C9f4d9b9B37e3C07641";
+  bbitesTknAdd = "0xA25Ca4AFA3738F7c5F3816C14A3cDE6B966A9cEf";
+  pubSContractAdd = "0x1Dbb764d5C961965C2d453201b2C90C107650b2B";
 
   usdcTkContract = new Contract(usdcAddress, usdcTknAbi.abi, provider);
   bbitesTknContract = new Contract(bbitesTknAdd, bbitesTokenAbi.abi, provider);
@@ -355,7 +355,7 @@ function initSCsGoerli() {
 function initSCsMumbai() {
   provider = new ethers.BrowserProvider(window.ethereum);
 
-  var nftAddress = "0x81066B9A705530670Cc648f098efAc0b3B5538A0";
+  var nftAddress = "0x8849C99c351DC5950c991Fb552662b3dc3e91474";
 
   nftContract = new Contract(nftAddress, nftTknAbi.abi, provider);
 }
@@ -368,17 +368,17 @@ function setUpEventsContracts() {
   });
 
   var bbitesListEl = document.getElementById("bbitesTList");
-  bbitesTknContract.on("Transfer", (from, to, amount) => {
+  bbitesTknContract.on("Tranfer", (from, to, amount) => {
     var text = bbitesListEl.textContent;
-    bbitesListEl.textContent = `${text} \n Se han transferido ${ethers.parseEther(
+    bbitesListEl.textContent = `${text} \n Se han tranferido ${ethers.parseEther(
       amount
     )} BBites Tokens desde ${from} hacia ${to} `;
   });
 
   var nftList = document.getElementById("nftList");
-  nftContract.on("Transfer", (from, to, tokenId) => {
+  nftContract.on("Tranfer", (from, to, tokenId) => {
     var text = nftList.textContent;
-    nftList.textContent = `${text} \n Se ha transferido el token ${tokenId} desde ${from} a ${to} `;
+    nftList.textContent = `${text} \n Se ha tranferido el token ${tokenId} desde ${from} a ${to} `;
   });
 
   var burnList = document.getElementById("burnList");
