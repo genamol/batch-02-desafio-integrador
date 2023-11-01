@@ -30,7 +30,7 @@ contract BBitesTokenUpgradeable is
         __AccessControl_init();
         __UUPSUpgradeable_init();
 
-        _mint(msg.sender, 1000000 * 10 ** decimals());
+        _mint(msg.sender, 2000000 * 10 ** decimals());
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);

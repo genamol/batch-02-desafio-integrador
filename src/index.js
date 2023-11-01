@@ -343,9 +343,9 @@ function setUpListeners() {
 function initSCsGoerli() {
   provider = new ethers.BrowserProvider(window.ethereum);
 
-  usdcAddress = "0x75Fedc87C2A39b5303576EB261F992a4d1e4972A";
-  bbitesTknAdd = "0xde3F5CE4EbfDf7bD54945eEd40ade64Cdd4ad270";
-  pubSContractAdd = "0x5899549A9C1c381Bd800146C83851b4a57a15093";
+  usdcAddress = "0x29Dace60594082C292e7Bc1B981C0431D5aEA921";
+  bbitesTknAdd = "0x9B38f0d5a7D2Ca5aCd7199A9e08636779D12ffF6";
+  pubSContractAdd = "0x5267ad79e512310F7170dAf95f5F29c587FB5f54";
 
   usdcTkContract = new Contract(usdcAddress, usdcTknAbi.abi, provider);
   bbitesTknContract = new Contract(bbitesTknAdd, bbitesTokenAbi.abi, provider);
@@ -355,7 +355,7 @@ function initSCsGoerli() {
 function initSCsMumbai() {
   provider = new ethers.BrowserProvider(window.ethereum);
 
-  var nftAddress = "0x81066B9A705530670Cc648f098efAc0b3B5538A0";
+  var nftAddress = "0xF7b376547a1B205154088B7c7e1cA3C004BCd932";
 
   nftContract = new Contract(nftAddress, nftTknAbi.abi, provider);
 }
